@@ -1,4 +1,4 @@
-
+// Day 1: Trebuchet?!
 
 fn p1(input: &str) -> i32 {
     input.lines()
@@ -60,13 +60,8 @@ fn p2(input: &str) -> i32 {
             let mut v = v.clone();
             v.sort_by(|a, b| a.1.cmp(&b.1));
 
-
-            println!("{}", line);
-            println!("{:?}", v);
-
             let first = v.first().unwrap_or(&(0, 0)).to_owned();
             let last = v.last().unwrap_or(&(0, 0)).to_owned();
-            println!("{:?} {:?}", first, last);
             let number = format!("{}{}", first.0, last.0)
                 .parse::<i32>()
                 .ok();
@@ -88,11 +83,11 @@ mod tests {
 
     #[test]
     fn p_1() {
-        assert_eq!(142, p1(include_str!("../example_1.txt")));
+        assert_eq!(p1(include_str!("../example_1.txt")), 142);
     }
 
     #[test]
     fn p_2() {
-        assert_eq!(281, p2(include_str!("../example_2.txt")));
+        assert_eq!(p2(include_str!("../example_2.txt")), 281);
     }
 }
