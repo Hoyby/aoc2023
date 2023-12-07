@@ -1,3 +1,6 @@
+
+// Day 4: Scratchcards
+
 fn p1(input: &str) -> i32 {
     input.lines()
         .filter_map(| card | {

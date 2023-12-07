@@ -1,7 +1,6 @@
 
 // Day 2: Cube Conundrum
 
-
 fn p1(input: &str) -> i32 {
     let game_constraint: [i32; 3] = [12, 13, 14]; // red, green, blue
     input.lines()

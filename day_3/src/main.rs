@@ -1,3 +1,6 @@
+
+// Day 3: Gear Ratios
+
 fn p1(input: &str) -> i32 {
     0
 }

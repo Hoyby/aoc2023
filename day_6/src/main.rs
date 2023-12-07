@@ -1,3 +1,6 @@
+
+// Day 6: Wait For It
+
 fn p1(input: &str) -> i32 {
     let lines: Vec<&str> = input.lines().collect();
 
