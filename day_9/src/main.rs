@@ -1,7 +1,8 @@
 // Day 9: Mirage Maintenance
 
 fn p1(input: &str) -> i64 {
-    input.lines()
+    input
+        .lines()
         .map(|line| {
             let parsed_numbers = line
                 .split_whitespace()
@@ -10,16 +11,17 @@ fn p1(input: &str) -> i64 {
 
             fn predict_next_num(list: Vec<i64>) -> i64 {
                 if list.iter().all(|&num| num == 0) {
-                    return list.last().cloned().unwrap()
+                    return list.last().cloned().unwrap();
                 }
-                let next_list: Vec<i64> = list.windows(2)
+                let next_list: Vec<i64> = list
+                    .windows(2)
                     .map(|pair| pair[1].checked_sub(pair[0]).unwrap_or(0))
                     .collect();
                 predict_next_num(next_list) + list.last().cloned().unwrap()
             }
-            
-            let ans = predict_next_num( parsed_numbers.clone());
-            ans 
+
+            let ans = predict_next_num(parsed_numbers.clone());
+            ans
         })
         .sum()
 }

@@ -1,4 +1,3 @@
-
 // Day 6: Wait For It
 
 fn p1(input: &str) -> i32 {
@@ -16,22 +15,24 @@ fn p1(input: &str) -> i32 {
         .map(|s| s.parse().unwrap())
         .collect();
 
-    let num_ways: Vec<i32> = time.iter().zip(distance.iter()).map(|(t, d)| {
-        let mut result = 0;
-        for travel_time in 0..*t {
-            let crank = t - travel_time;
-            let distance = crank * travel_time;
-            if distance > *d {
-                result += 1;
+    let num_ways: Vec<i32> = time
+        .iter()
+        .zip(distance.iter())
+        .map(|(t, d)| {
+            let mut result = 0;
+            for travel_time in 0..*t {
+                let crank = t - travel_time;
+                let distance = crank * travel_time;
+                if distance > *d {
+                    result += 1;
+                }
             }
-        }
-        result
-
-    }).collect();
+            result
+        })
+        .collect();
 
     num_ways.iter().product()
 }
-
 
 fn p2(input: &str) -> i32 {
     let lines: Vec<&str> = input.lines().collect();
@@ -66,24 +67,24 @@ fn p2(input: &str) -> i32 {
 }
 
 fn main() {
-let input = include_str!("../input.txt");
-println!("Part 1: {}", p1(input));
-println!("Part 2: {}", p2(input));
+    let input = include_str!("../input.txt");
+    println!("Part 1: {}", p1(input));
+    println!("Part 2: {}", p2(input));
 }
 
 #[cfg(test)]
 mod tests {
-use super::*;
+    use super::*;
 
-#[test]
-fn test_p1() {
-    let input = include_str!("../example_1.txt");
-    assert_eq!(p1(input), 288);
-}
+    #[test]
+    fn test_p1() {
+        let input = include_str!("../example_1.txt");
+        assert_eq!(p1(input), 288);
+    }
 
-#[test]
-fn test_p2() {
-    let input = include_str!("../example_2.txt");
-    assert_eq!(p2(input), 71503);
-}
+    #[test]
+    fn test_p2() {
+        let input = include_str!("../example_2.txt");
+        assert_eq!(p2(input), 71503);
+    }
 }

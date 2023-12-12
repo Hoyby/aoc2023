@@ -1,9 +1,8 @@
-
 // Day 3: Gear Ratios
 
 use std::{collections::HashSet, usize};
 
-enum Direction{
+enum Direction {
     Lt,
     Rt,
     Up,
@@ -27,8 +26,6 @@ impl Direction {
     }
 }
 
-
-
 fn p1(input: &str) -> i32 {
     let matrix = input
         .lines()
@@ -40,8 +37,6 @@ fn p1(input: &str) -> i32 {
 
     let mut result = 0;
     let mut seen = HashSet::new();
-
-    
 
     for row in 0..rows {
         for col in 0..columns {
@@ -57,21 +52,28 @@ fn p1(input: &str) -> i32 {
                     (Direction::Dn, Direction::At),
                     (Direction::Dn, Direction::Rt),
                 ] {
-                    if let (Some(new_row), Some(new_col)) = (
-                        dir_row.delta(row, rows),
-                        dir_col.delta(col, columns),
-                    ) {
+                    if let (Some(new_row), Some(new_col)) =
+                        (dir_row.delta(row, rows), dir_col.delta(col, columns))
+                    {
                         if matrix[new_row][new_col].is_ascii_digit() {
                             let (number, digit_index_start, digit_index_end) = {
                                 let mut index_start = new_col;
-                                while index_start > 0 && matrix[new_row][index_start - 1].is_ascii_digit() {
+                                while index_start > 0
+                                    && matrix[new_row][index_start - 1].is_ascii_digit()
+                                {
                                     index_start -= 1;
                                 }
                                 let mut index_end = new_col;
-                                while index_end < matrix[new_row].len() && matrix[new_row][index_end].is_ascii_digit() {
+                                while index_end < matrix[new_row].len()
+                                    && matrix[new_row][index_end].is_ascii_digit()
+                                {
                                     index_end += 1;
                                 }
-                                let number = std::str::from_utf8(&&matrix[new_row][index_start..index_end]).unwrap().parse::<i32>().unwrap();
+                                let number =
+                                    std::str::from_utf8(&&matrix[new_row][index_start..index_end])
+                                        .unwrap()
+                                        .parse::<i32>()
+                                        .unwrap();
                                 (number, index_start, index_end)
                             };
 
@@ -87,30 +89,29 @@ fn p1(input: &str) -> i32 {
     result
 }
 
-
 fn p2(input: &str) -> i32 {
     0
 }
 
 fn main() {
-let input = include_str!("../input.txt");
-println!("Part 1: {}", p1(input));
-println!("Part 2: {}", p2(input));
+    let input = include_str!("../input.txt");
+    println!("Part 1: {}", p1(input));
+    println!("Part 2: {}", p2(input));
 }
 
 #[cfg(test)]
 mod tests {
-use super::*;
+    use super::*;
 
-#[test]
-fn test_p1() {
-    let input = include_str!("../example_1.txt");
-    assert_eq!(p1(input), 4361);
-}
+    #[test]
+    fn test_p1() {
+        let input = include_str!("../example_1.txt");
+        assert_eq!(p1(input), 4361);
+    }
 
-#[test]
-fn test_p2() {
-    let input = include_str!("../example_2.txt");
-    assert_eq!(p2(input), 30);
-}
+    #[test]
+    fn test_p2() {
+        let input = include_str!("../example_2.txt");
+        assert_eq!(p2(input), 30);
+    }
 }

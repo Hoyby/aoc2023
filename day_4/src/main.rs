@@ -1,15 +1,18 @@
-
 // Day 4: Scratchcards
 
 fn p1(input: &str) -> i32 {
-    input.lines()
-        .filter_map(| card | {
+    input
+        .lines()
+        .filter_map(|card| {
             let card: Vec<&str> = card.split(": ").collect();
             let card_numbers: Vec<&str> = card[1].split(" | ").collect();
             let winning_numbers = card_numbers[0].split_whitespace().collect::<Vec<&str>>();
             let my_numbers = card_numbers[1].split_whitespace().collect::<Vec<&str>>();
-            let intersection = winning_numbers.iter().filter(|&n| my_numbers.contains(n)).collect::<Vec<&&str>>();
-            
+            let intersection = winning_numbers
+                .iter()
+                .filter(|&n| my_numbers.contains(n))
+                .collect::<Vec<&&str>>();
+
             let mut result = 1;
 
             for _ in 0..intersection.len() {
@@ -21,10 +24,9 @@ fn p1(input: &str) -> i32 {
             } else {
                 None
             }
-            
         })
         .sum::<usize>() as i32
-    }
+}
 
 fn p2(input: &str) -> i32 {
     let lines: Vec<&str> = input.lines().collect();
@@ -42,11 +44,14 @@ fn p2(input: &str) -> i32 {
         let line = &lines[i];
         let card: Vec<&str> = line.split(": ").collect();
         let card_numbers: Vec<&str> = card[1].split(" | ").collect();
-        
+
         let winning_numbers = card_numbers[0].split_whitespace().collect::<Vec<&str>>();
         let my_numbers = card_numbers[1].split_whitespace().collect::<Vec<&str>>();
-        let intersection = winning_numbers.iter().filter(|&n| my_numbers.contains(n)).collect::<Vec<&&str>>();
-        
+        let intersection = winning_numbers
+            .iter()
+            .filter(|&n| my_numbers.contains(n))
+            .collect::<Vec<&&str>>();
+
         println!("{:?}", winning_numbers);
 
         for j in (0..intersection.len()).rev() {
