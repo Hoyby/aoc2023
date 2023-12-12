@@ -26,8 +26,32 @@ fn p1(input: &str) -> i64 {
         .sum()
 }
 
-fn p2(input: &str) -> usize {
-    0
+fn p2(input: &str) -> i64 {
+    input
+    .lines()
+    .map(|line| {
+        let parsed_numbers = line
+            .split_whitespace()
+            .map(|num| num.parse().unwrap())
+            .collect::<Vec<i64>>();
+
+        fn predict_prev_num(list: Vec<i64>) -> i64 {
+            if list.iter().all(|&num| num == 0) {
+                return list.first().cloned().unwrap();
+            }
+            let next_list: Vec<i64> = list
+                .windows(2)
+                .map(|pair| {
+                    pair[1].checked_sub(pair[0]).unwrap_or(0)
+                })
+                .collect();
+            list.first().cloned().unwrap() - predict_prev_num(next_list)
+        }
+
+        let ans = predict_prev_num(parsed_numbers.clone());
+        ans
+    })
+    .sum()
 }
 
 fn main() {
@@ -49,6 +73,6 @@ mod tests {
     #[test]
     fn test_p2() {
         let input = include_str!("../example_2.txt");
-        assert_eq!(p2(input), 1);
+        assert_eq!(p2(input), 2);
     }
 }
