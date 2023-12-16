@@ -54,6 +54,8 @@ fn p1(input: &str) -> i64 {
 }
 
 fn p2(input: &str) -> i64 {
+    // TODO: find and fix bug
+
     let mut maps = input.split("\n\n");
     let mut seeds = maps
         .next()

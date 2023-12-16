@@ -1,8 +1,7 @@
 // Day 10: Pipe Maze
 
-use core::num;
 use itertools::Itertools;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 enum Direction {
@@ -80,12 +79,10 @@ fn p1(input: &str) -> usize {
                     (current_node.1 as isize + direction.to_tuple().1) as usize,
                 );
 
-                // check if next node is out of bounds
                 if next_node.0 >= matrix.len() || next_node.1 >= matrix[0].len() {
                     continue;
                 }
 
-                // check if next node is a pipe
                 if pipes
                     .get(&matrix[next_node.0 as usize][next_node.1 as usize])
                     .is_none()
@@ -93,7 +90,6 @@ fn p1(input: &str) -> usize {
                     continue;
                 }
 
-                // check if next node connects to current node
                 if !pipes
                     .get(&matrix[next_node.0][next_node.1])
                     .unwrap()
@@ -160,6 +156,8 @@ fn count_points_inside_loop(loop_chars: &[(usize, usize, char)]) -> usize {
 }
 
 fn p2(input: &str) -> usize {
+    // TODO: find area inside loop
+
     let matrix: Vec<Vec<char>> = input.lines().map(|line| line.chars().collect()).collect();
 
     let pipes: HashMap<char, Vec<Direction>> = [
@@ -209,12 +207,10 @@ fn p2(input: &str) -> usize {
                     (current_node.1 as isize + direction.to_tuple().1) as usize,
                 );
 
-                // check if next node is out of bounds
                 if next_node.0 >= matrix.len() || next_node.1 >= matrix[0].len() {
                     continue;
                 }
 
-                // check if next node is a pipe
                 if pipes
                     .get(&matrix[next_node.0 as usize][next_node.1 as usize])
                     .is_none()
@@ -222,7 +218,6 @@ fn p2(input: &str) -> usize {
                     continue;
                 }
 
-                // check if next node connects to current node
                 if !pipes
                     .get(&matrix[next_node.0][next_node.1])
                     .unwrap()
@@ -249,7 +244,7 @@ fn p2(input: &str) -> usize {
 
 fn main() {
     let input = include_str!("../input.txt");
-    // println!("Part 1: {}", p1(input));
+    println!("Part 1: {}", p1(input));
     println!("Part 2: {}", p2(input));
 }
 

@@ -1,7 +1,7 @@
 // Day 2: Cube Conundrum
 
 fn p1(input: &str) -> i32 {
-    let game_constraint: [i32; 3] = [12, 13, 14]; // red, green, blue
+    let game_constraint: [i32; 3] = [12, 13, 14];
     input
         .lines()
         .filter_map(|line| {
@@ -28,7 +28,6 @@ fn p1(input: &str) -> i32 {
                 })
                 .collect::<Vec<Vec<i32>>>();
 
-            // check if any of the sets are greater than the game constraint, if so return None else return the game ID
             if sets.iter().any(|set| {
                 set[0] > game_constraint[0]
                     || set[1] > game_constraint[1]
@@ -50,7 +49,6 @@ fn p2(input: &str) -> i32 {
 
             let mut max_elem_set: Vec<i32> = vec![0; 3];
 
-            // parse each set to vec and return a vec containing the max value of each color
             game[1]
                 .split("; ")
                 .map(|set| {
@@ -78,7 +76,6 @@ fn p2(input: &str) -> i32 {
                         });
                 });
 
-            // return the product of the max_elem_set
             Some(max_elem_set.iter().fold(1, |acc, elem| acc * elem))
         })
         .sum::<i32>()

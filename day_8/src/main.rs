@@ -11,7 +11,6 @@ fn p1(input: &str) -> u32 {
             let parts: Vec<&str> = line.split(" = ").collect();
 
             if parts.len() == 2 {
-                // key, value
                 let key = parts[0];
                 let values = parts[1]
                     .trim_matches(|c| c == '(' || c == ')')
@@ -31,7 +30,6 @@ fn p1(input: &str) -> u32 {
     let mut curr = "AAA";
 
     let mut count = 0;
-    // All elements in curr must be "ZZZ" for the loop to end.
     while curr != "ZZZ" {
         let instruction = &instructions
             .chars()
@@ -105,16 +103,14 @@ fn p2(input: &str) -> usize {
                 .unwrap()
                 == 'L'
             {
-                map.get(curr).unwrap().0 // left
+                map.get(curr).unwrap().0
             } else {
-                map.get(curr).unwrap().1 // right
+                map.get(curr).unwrap().1
             };
             if new_curr.ends_with('Z') {
                 tracker.insert(i, count + 1);
                 if tracker.len() == curr_vec.len() {
-                    // fold all values to lcm
                     return lcm(tracker.values().map(|v| *v).collect()) as usize;
-                    // Learning point, make sure to assign enough bits to result when multiplying large numbers... (u32 us too small)
                 }
             }
             next_pos.push(new_curr);

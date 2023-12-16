@@ -1,6 +1,9 @@
 // Day 3: Gear Ratios
 
-use std::{collections::{HashSet, HashMap}, usize};
+use std::{
+    collections::{HashMap, HashSet},
+    usize,
+};
 
 enum Direction {
     Lt,
@@ -130,12 +133,11 @@ fn p2(input: &str) -> usize {
                                 {
                                     index_end += 1;
                                 }
-                                let number = std::str::from_utf8(
-                                    &&matrix[new_row][index_start..index_end],
-                                )
-                                .unwrap()
-                                .parse::<usize>()
-                                .unwrap();
+                                let number =
+                                    std::str::from_utf8(&&matrix[new_row][index_start..index_end])
+                                        .unwrap()
+                                        .parse::<usize>()
+                                        .unwrap();
                                 (number, index_start, index_end)
                             };
 
@@ -150,7 +152,7 @@ fn p2(input: &str) -> usize {
             }
         }
     }
-    
+
     adjacent_nums
         .iter()
         .filter(|(_, v)| v.len() > 1)

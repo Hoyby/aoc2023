@@ -58,7 +58,6 @@ fn p2(input: &str) -> usize {
             let mut map_clone = map.clone();
 
             for direction in &directions {
-                // Check memoization cache
                 if let Some(result) = memoization_cache.get(&(map.clone())) {
                     let result_iteration = result.1;
                     let result_map = result.0.clone();
@@ -67,7 +66,6 @@ fn p2(input: &str) -> usize {
 
                     if new_total < total_iterations {
                         memoization_cache.clear();
-                        // search again, skipping known cycles
                         return roll_rocks_memoized(result_map, new_total, memoization_cache);
                     }
                 }
