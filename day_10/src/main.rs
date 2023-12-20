@@ -1,245 +1,107 @@
 // Day 10: Pipe Maze
 
-use itertools::Itertools;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
+fn get_start_position(pipes: &[&[u8]]) -> (i32, i32) {
+    for (y, row) in pipes.iter().enumerate() {
+        for (x, &c) in row.iter().enumerate() {
+            if c == b'S' {
+                return (x as i32, y as i32);
+            }
+        }
+    }
+    unreachable!()
 }
 
-impl Direction {
-    fn to_tuple(&self) -> (isize, isize) {
-        match self {
-            Direction::Up => (-1, 0),
-            Direction::Down => (1, 0),
-            Direction::Left => (0, -1),
-            Direction::Right => (0, 1),
+fn get_main_loop(
+    pipes: &[&[u8]],
+    width: i32,
+    height: i32,
+    start_x: i32,
+    start_y: i32,
+    mut dx: i32,
+    mut dy: i32,
+) -> Option<HashMap<(i32, i32), u8>> {
+    let mut x = start_x;
+    let mut y = start_y;
+    let start_dx = dx;
+    let start_dy = dy;
+    let mut main_loop: HashMap<(i32, i32), u8> = HashMap::new();
+    loop {
+        x += dx;
+        y += dy;
+        if x < 0 || x >= width || y < 0 || y >= height {
+            return None;
+        }
+        let c = pipes[y as usize][x as usize];
+        if c == b'S' {
+            let c = match (start_dx, start_dy, dx, dy) {
+                (1, 0, 1, 0) => b'-',
+                (1, 0, 0, 1) => b'L',
+                (1, 0, 0, -1) => b'F',
+                (0, 1, 1, 0) => b'7',
+                (0, 1, 0, 1) => b'|',
+                (-1, 0, 0, 1) => b'J',
+                _ => unreachable!(),
+            };
+            main_loop.insert((x, y), c);
+            return Some(main_loop);
+        }
+        main_loop.insert((x, y), c);
+        (dx, dy) = match (dx, dy, c) {
+            (1, 0, b'-') | (0, 1, b'L') | (0, -1, b'F') => (1, 0),
+            (1, 0, b'7') | (0, 1, b'|') | (-1, 0, b'F') => (0, 1),
+            (-1, 0, b'-') | (0, 1, b'J') | (0, -1, b'7') => (-1, 0),
+            (1, 0, b'J') | (-1, 0, b'L') | (0, -1, b'|') => (0, -1),
+            _ => {
+                return None;
+            }
+        };
+    }
+}
+
+fn count_tiles_inside(main_loop: &HashMap<(i32, i32), u8>, width: i32, height: i32) -> u32 {
+    let mut num_tiles_inside = 0;
+    for y in 0..height {
+        let mut is_inside = false;
+        for x in 0..width {
+            let c = main_loop.get(&(x, y));
+            if let Some(&c) = c {
+                if c == b'|' || c == b'J' || c == b'L' {
+                    is_inside = !is_inside;
+                }
+            } else if is_inside {
+                num_tiles_inside += 1;
+            }
         }
     }
-    fn opposite(&self) -> Self {
-        match self {
-            Direction::Up => Direction::Down,
-            Direction::Down => Direction::Up,
-            Direction::Left => Direction::Right,
-            Direction::Right => Direction::Left,
-        }
-    }
+    num_tiles_inside
 }
 
 fn p1(input: &str) -> usize {
-    let matrix: Vec<Vec<char>> = input.lines().map(|line| line.chars().collect()).collect();
-
-    let pipes: HashMap<char, Vec<Direction>> = [
-        ('|', vec![Direction::Up, Direction::Down]),
-        ('-', vec![Direction::Left, Direction::Right]),
-        ('J', vec![Direction::Left, Direction::Up]),
-        ('L', vec![Direction::Right, Direction::Up]),
-        ('F', vec![Direction::Right, Direction::Down]),
-        ('7', vec![Direction::Left, Direction::Down]),
-        (
-            'S',
-            vec![
-                Direction::Up,
-                Direction::Down,
-                Direction::Left,
-                Direction::Right,
-            ],
-        ),
-    ]
-    .iter()
-    .cloned()
-    .collect();
-
-    let s_pos = matrix
+    let pipes: Vec<&[u8]> = input.lines().map(|line| line.as_bytes()).collect();
+    let width = pipes[0].len() as i32;
+    let height = pipes.len() as i32;
+    let (start_x, start_y) = get_start_position(&pipes);
+    let main_loop = [(1, 0), (0, 1), (-1, 0), (0, -1)]
         .iter()
-        .enumerate()
-        .find_map(|(row, row_vec)| row_vec.iter().position(|&c| c == 'S').map(|col| (row, col)))
+        .filter_map(|&(dx, dy)| get_main_loop(&pipes, width, height, start_x, start_y, dx, dy))
+        .next()
         .unwrap();
-
-    let mut seen: HashSet<(usize, usize)> = HashSet::new();
-
-    seen.insert(s_pos);
-    let mut count = 1;
-
-    fn dfs_recursive(
-        matrix: &Vec<Vec<char>>,
-        pipes: &HashMap<char, Vec<Direction>>,
-        seen: &mut HashSet<(usize, usize)>,
-        count: &mut usize,
-        current_node: (usize, usize),
-    ) {
-        if let Some(pipe_directions) = pipes.get(&matrix[current_node.0][current_node.1]) {
-            for &direction in pipe_directions {
-                let next_node = (
-                    (current_node.0 as isize + direction.to_tuple().0) as usize,
-                    (current_node.1 as isize + direction.to_tuple().1) as usize,
-                );
-
-                if next_node.0 >= matrix.len() || next_node.1 >= matrix[0].len() {
-                    continue;
-                }
-
-                if pipes
-                    .get(&matrix[next_node.0 as usize][next_node.1 as usize])
-                    .is_none()
-                {
-                    continue;
-                }
-
-                if !pipes
-                    .get(&matrix[next_node.0][next_node.1])
-                    .unwrap()
-                    .contains(&direction.opposite())
-                {
-                    continue;
-                }
-
-                if seen.insert(next_node) {
-                    println!(
-                        "New node from {:?} at {:?} to {:?} at {:?}, count: {:?}",
-                        current_node,
-                        matrix[current_node.0][current_node.1],
-                        next_node,
-                        matrix[next_node.0][next_node.1],
-                        count
-                    );
-                    println!("Recurse!");
-                    *count += 1;
-                    dfs_recursive(matrix, pipes, seen, count, next_node);
-                }
-            }
-        }
-    }
-
-    dfs_recursive(&matrix, &pipes, &mut seen, &mut count, s_pos);
-    println!("Count: {:?}", count);
-    count / 2
-}
-
-fn count_points_inside_loop(loop_chars: &[(usize, usize, char)]) -> usize {
-    let sorted_loop: Vec<Vec<_>> = loop_chars
-        .iter()
-        .sorted_by_key(|&(row, _, _)| row)
-        .group_by(|&(row, _, _)| row)
-        .into_iter()
-        .map(|(_, group)| {
-            group
-                .sorted_by_key(|&(_, col, _)| col)
-                .cloned()
-                .collect::<Vec<_>>()
-        })
-        .collect();
-
-    let starter: Vec<char> = vec!['|', '7', 'J', 'S'];
-    let ender: Vec<char> = vec!['|', 'L', 'F', 'S'];
-
-    let result = sorted_loop.iter().fold(0, |acc, row| {
-        row.iter()
-            .filter(|(_, _, c)| starter.contains(c) || ender.contains(c))
-            .tuples()
-            .filter_map(|(pair1, pair2)| {
-                if !starter.contains(&pair1.2) || !ender.contains(&pair2.2) {
-                    return None;
-                }
-
-                Some(pair2.1 - pair1.1 - 1)
-            })
-            .sum::<usize>()
-            + acc
-    });
-
-    result
+    main_loop.len() as usize / 2
 }
 
 fn p2(input: &str) -> usize {
-    // TODO: find area inside loop
-
-    let matrix: Vec<Vec<char>> = input.lines().map(|line| line.chars().collect()).collect();
-
-    let pipes: HashMap<char, Vec<Direction>> = [
-        ('|', vec![Direction::Up, Direction::Down]),
-        ('-', vec![Direction::Left, Direction::Right]),
-        ('J', vec![Direction::Left, Direction::Up]),
-        ('L', vec![Direction::Right, Direction::Up]),
-        ('F', vec![Direction::Right, Direction::Down]),
-        ('7', vec![Direction::Left, Direction::Down]),
-        (
-            'S',
-            vec![
-                Direction::Up,
-                Direction::Down,
-                Direction::Left,
-                Direction::Right,
-            ],
-        ),
-    ]
-    .iter()
-    .cloned()
-    .collect();
-
-    let s_pos = matrix
+    let pipes: Vec<&[u8]> = input.lines().map(|line| line.as_bytes()).collect();
+    let width = pipes[0].len() as i32;
+    let height = pipes.len() as i32;
+    let (start_x, start_y) = get_start_position(&pipes);
+    let main_loop = [(1, 0), (0, 1), (-1, 0), (0, -1)]
         .iter()
-        .enumerate()
-        .find_map(|(row, row_vec)| row_vec.iter().position(|&c| c == 'S').map(|col| (row, col)))
+        .filter_map(|&(dx, dy)| get_main_loop(&pipes, width, height, start_x, start_y, dx, dy))
+        .next()
         .unwrap();
-
-    let mut seen: HashSet<(usize, usize)> = HashSet::new();
-    let mut loop_list: Vec<(usize, usize, char)> = Vec::new();
-
-    loop_list.push((s_pos.0, s_pos.1, matrix[s_pos.0][s_pos.1]));
-    seen.insert(s_pos);
-
-    fn dfs_recursive(
-        matrix: &Vec<Vec<char>>,
-        pipes: &HashMap<char, Vec<Direction>>,
-        seen: &mut HashSet<(usize, usize)>,
-        loop_list: &mut Vec<(usize, usize, char)>,
-        current_node: (usize, usize),
-    ) {
-        if let Some(pipe_directions) = pipes.get(&matrix[current_node.0][current_node.1]) {
-            for &direction in pipe_directions {
-                let next_node = (
-                    (current_node.0 as isize + direction.to_tuple().0) as usize,
-                    (current_node.1 as isize + direction.to_tuple().1) as usize,
-                );
-
-                if next_node.0 >= matrix.len() || next_node.1 >= matrix[0].len() {
-                    continue;
-                }
-
-                if pipes
-                    .get(&matrix[next_node.0 as usize][next_node.1 as usize])
-                    .is_none()
-                {
-                    continue;
-                }
-
-                if !pipes
-                    .get(&matrix[next_node.0][next_node.1])
-                    .unwrap()
-                    .contains(&direction.opposite())
-                {
-                    continue;
-                }
-
-                if seen.insert(next_node) {
-                    loop_list.insert(
-                        loop_list.len() - 1,
-                        (next_node.0, next_node.1, matrix[next_node.0][next_node.1]),
-                    );
-                    dfs_recursive(matrix, pipes, seen, loop_list, next_node);
-                }
-            }
-        }
-    }
-
-    dfs_recursive(&matrix, &pipes, &mut seen, &mut loop_list, s_pos);
-    let num_points_inside_loop = count_points_inside_loop(&loop_list);
-    num_points_inside_loop as usize
+    count_tiles_inside(&main_loop, width, height) as usize
 }
 
 fn main() {
