@@ -1,4 +1,4 @@
-// Day 7: Camel Cards
+// Day 8: Haunted Wasteland
 
 use std::collections::HashMap;
 

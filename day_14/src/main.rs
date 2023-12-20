@@ -1,4 +1,4 @@
-// Day 13: Point of Incidence
+// Day 14: Parabolic Reflector Dish
 
 use std::collections::HashMap;
 
