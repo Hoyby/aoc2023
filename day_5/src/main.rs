@@ -1,113 +1,95 @@
 // Day 5: If You Give A Seed A Fertilizer
 
+use rayon::prelude::*;
 use std::ops::Range;
 
-fn get_lookup_table<T>(map: T) -> Vec<(Range<i64>, i64)>
-where
-    T: AsRef<str>,
-{
-    map.as_ref()
-        .lines()
-        .skip(1)
-        .map(|line| {
-            let mut parts = line
-                .split_whitespace()
-                .filter_map(|part| part.parse::<i64>().ok());
-            let dest_start = parts.next().unwrap();
-            let src_start = parts.next().unwrap();
-            let range = parts.next().unwrap();
-            (src_start..src_start + range, dest_start - src_start)
-        })
-        .collect::<Vec<_>>()
+#[derive(Clone)]
+struct Map {
+    source_range: Range<usize>,
+    destination_range: Range<usize>,
 }
 
-fn p1(input: &str) -> i64 {
-    let mut maps = input.split("\n\n");
-    let mut seeds = maps
-        .next()
-        .map(|string| {
-            string
-                .trim_start_matches("seeds:")
-                .split_whitespace()
-                .filter_map(|item| item.parse::<i64>().ok())
-                .collect::<Vec<i64>>()
-        })
-        .unwrap();
+fn transform_seed_from_start_to_end(all_maps: Vec<Vec<Map>>, seed: usize) -> usize {
+    let mut result = seed;
 
-    for map in maps {
-        let table = get_lookup_table(map);
-        seeds = seeds
-            .into_iter()
-            .map(|seed| {
-                let mut source = seed;
-                for (map_range, diff) in &table {
-                    if source >= map_range.start && source < map_range.end {
-                        source = map_range.start + diff + (source - map_range.start);
-                        break;
-                    }
-                }
-                source
+    for map in all_maps {
+        result = map
+            .iter()
+            .find(|subsection| subsection.source_range.contains(&result))
+            .map(|subsection| {
+                subsection.destination_range.start + (result - subsection.source_range.start)
             })
-            .collect();
+            .unwrap_or(result);
     }
-    seeds.into_iter().min().unwrap()
+
+    result
 }
 
-fn p2(input: &str) -> i64 {
-    // TODO: find and fix bug
-
-    let mut maps = input.split("\n\n");
-    let mut seeds = maps
-        .next()
-        .map(|string| {
-            string
-                .trim_start_matches("seeds:")
-                .split_whitespace()
-                .filter_map(|item| item.parse::<i64>().ok())
-                .collect::<Vec<i64>>()
-        })
+fn parse_subsections(section: &str) -> Vec<Map> {
+    section
+        .split_once(":\n")
         .unwrap()
-        .chunks(2)
-        .map(|chunk| {
-            let arr = [chunk[0], chunk[1]];
-            arr
+        .1
+        .lines()
+        .map(str::split_whitespace)
+        .map(|line| line.map(str::parse).map(Result::unwrap).collect::<Vec<_>>())
+        .map(|nums| Map {
+            source_range: nums[1]..nums[1] + nums[2],
+            destination_range: nums[0]..nums[0] + nums[2],
         })
-        .collect::<Vec<[i64; 2]>>();
+        .collect()
+}
 
-    for map in maps {
-        let table = get_lookup_table(map);
+fn p1(input: &str) -> usize {
+    let parts = input.split("\n\n").collect::<Vec<&str>>();
 
-        let temp: Vec<[i64; 2]> = seeds
-            .into_iter()
-            .flat_map(|[start, mut range]| {
-                range += start; // range is now end
-                let mut temp = Vec::new();
+    let maps = parts[1..]
+        .iter()
+        .map(|section| parse_subsections(section))
+        .collect::<Vec<Vec<Map>>>();
 
-                for (map_range, diff) in &table {
-                    let isect_start = start.max(map_range.start);
-                    let isect_end = range.min(map_range.end);
+    let seeds = parts[0]
+        .split_once(": ")
+        .unwrap()
+        .1
+        .split_whitespace()
+        .map(|s| s.parse::<usize>().unwrap());
 
-                    if isect_start < isect_end {
-                        temp.push([isect_start + diff, isect_end - isect_start]);
-                        if isect_start > start {
-                            temp.push([map_range.start, isect_start - map_range.start]);
-                        } else if range > isect_end {
-                            temp.push([isect_end, range - isect_end]);
-                        }
-                        break;
-                    }
-                }
-                if temp.is_empty() {
-                    temp.push([start, range - start]);
-                }
-                temp
-            })
-            .collect();
+    seeds
+        .map(|seed| transform_seed_from_start_to_end(maps.clone(), seed))
+        .min()
+        .unwrap()
+}
 
-        seeds = temp;
-    }
+fn p2(input: &str) -> usize {
+    let parts = input.split("\n\n").collect::<Vec<&str>>();
 
-    seeds.into_iter().min().unwrap()[0]
+    let maps = parts[1..]
+        .iter()
+        .map(|section| parse_subsections(section))
+        .collect::<Vec<Vec<Map>>>();
+
+    let seeds = parts[0]
+        .split_once(": ")
+        .unwrap()
+        .1
+        .split_whitespace()
+        .map(|s| s.parse::<usize>().unwrap())
+        .collect::<Vec<usize>>()
+        .chunks(2)
+        .fold(Vec::new(), |mut acc, chunk| {
+            for i in chunk[0]..chunk[0] + chunk[1] {
+                acc.push(i);
+            }
+
+            acc
+        });
+
+    seeds
+        .into_par_iter()
+        .map(|seed| transform_seed_from_start_to_end(maps.clone(), seed))
+        .min()
+        .unwrap()
 }
 
 fn main() {
